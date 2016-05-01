@@ -7,7 +7,7 @@
 // @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js
 // @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js
-// @match        http*://www.steamgifts.com/user/*
+// @include      http*://www.steamgifts.com/user/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
