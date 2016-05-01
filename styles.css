@@ -1,0 +1,69 @@
+.sgun_note{
+ line-height: initial;
+ margin-top: 6px;
+}
+
+div.sgun_note:first-of-type{
+ padding-top:12px;
+}
+
+div.sgun_note:last-of-type{
+ padding-bottom:12px;
+}
+
+.sgun_notes_panel {
+ text-align: left;
+}
+
+.sgun_note_type {
+   margin-right: 4px;
+   font-size: 20px;
+}
+
+.sgun_note_type .fa{
+  vertical-align: top;
+  font-size: 25px;
+}
+
+.sgun_note_text {
+  display: block;
+  padding-left: 28px;
+  color: black;
+}
+
+.sgun_note_type {
+  float: left;
+}
+
+.sgun_note_date {
+  display: block;
+  padding-left: 28px;
+  font-size: 10px;
+}
+
+
+.sgun_note__blacklist .sgun_note_type, .sgun_note__whitelist_remove .sgun_note_type{
+ color:red;
+}
+.sgun_note__comment .sgun_note_type{
+ color:blue;
+}
+.sgun_note__whitelist .sgun_note_type, .sgun_note__blacklist_remove .sgun_note_type{
+ color:green;
+}
+
+.sidebar__search-input{
+background-color: inherit;
+}
+
+.sgun_new_note__comment {
+ background-color: rgba(0,0,255,0.1);
+}
+
+.sgun_new_note__whitelist, .sgun_new_note__blacklist_remove {
+ background-color: rgba(0,255,0,0.1);
+}
+
+.sgun_new_note__blacklist, .sgun_new_note__whitelist_remove {
+ background-color: rgba(255,0,0,0.1);
+}
