@@ -4,8 +4,8 @@
 // @version      0.3
 // @description  Save notes about other users on steamgifts.com
 // @author       MH
-// @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user_ff.js
-// @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user_ff.js
+// @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
+// @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js
 // @include      http*://www.steamgifts.com/user/*

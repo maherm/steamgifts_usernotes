@@ -226,7 +226,7 @@ function initWhiteAndBlacklistButtons(){
         $(".sidebar__shortcut__whitelist, .sidebar__shortcut__blacklist").addClass("is-disabled");
         e.toggleClass("is-loading");
         e.hasClass("is-selected") ? e.find("input[name=action]").val("delete") : e.find("input[name=action]").val("insert");
-        if(ajax_url === undefined) {var ajax_url = "/ajax.php";}
+        var ajax_url = "/ajax.php";
 		$.ajax({
             url: ajax_url,
             type: "POST",
