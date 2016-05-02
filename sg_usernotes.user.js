@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SG User Notes
 // @namespace    https://www.steamgifts.com
-// @version      0.3
+// @version      0.4
 // @description  Save notes about other users on steamgifts.com
 // @author       MH
 // @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js
