@@ -67,3 +67,31 @@ background-color: inherit;
 .sgun_new_note__blacklist, .sgun_new_note__whitelist_remove {
  background-color: rgba(255,0,0,0.1);
 }
+
+/* Settings Page */
+.sgun__form .form__submit-button  { 
+	padding-left: 7px; 
+    padding-right: 7px; 
+	margin-right: 7px;
+} 
+
+.form__row .sgun__form .form__submit-button i.fa {
+  padding-right: 6px;
+}
+
+#sgun__file_import{
+ display: none;
+}
+
+.sgun__notes_present i.sgun__badge{
+	font-size: 0.55em;
+    font-family: sans-serif;
+    text-shadow: none;
+}
+
+input.sgun__checkbox {
+	width: 11px;
+    height: 11px;
+    margin: 2px 6px 2px 2px;
+    vertical-align: top;
+}
