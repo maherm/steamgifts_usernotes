@@ -234,7 +234,7 @@ function readSingleFile(e, successCallback) {
 }
 
 function getUserKeys(json){
-    return Object.keys(json);
+    return Object.keys(json).filter(function(el){return !isNaN(el);});
 }
 
 function importJson(jsonStr, importMode){
@@ -257,10 +257,6 @@ function importJson(jsonStr, importMode){
             return;
         }
      }
-    var sync = json.sync;
-    if(sync !== undefined){
-        saveSync(sync);
-    }
 
     var importedNotesCounter = 0;
     for(var i=0; i<userKeys.length; i++){
@@ -268,6 +264,11 @@ function importJson(jsonStr, importMode){
         var value = json[key];
         importedNotesCounter += value.length;
         GM_setValue(key, JSON.stringify(value));
+    }
+
+    var sync = json.sync;
+    if(sync !== undefined){
+        saveSync(sync);
     }
 
     alert("Succesfully imported "+importedNotesCounter+" notes for "+userKeys.length+" different users");
