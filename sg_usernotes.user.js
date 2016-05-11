@@ -489,7 +489,7 @@ function createInfoDiv(){
     textLines.push("created by <a href='https://www.steamgifts.com/user/mahermen'>mahermen</a>");
     textLines.push("");
     textLines.push("<a href='https://www.steamgifts.com/discussion/WO6jz/userscript-sg-user-notes'>Show discussion thread</a>");
-    textLines.push("<a href='https://github.com/maherm/steamgifts_usernotes'>Visit on GitHub</a>");
+    textLines.push("<a href='https://github.com/maherm/steamgifts_usernotes' target='_blank'>Visit on GitHub</a>");
 
     for(var i=0; i<textLines.length;i++){
         $div.append($("<span class='sgun__infobox_line'>"+textLines[i]+"</span><br>"));
