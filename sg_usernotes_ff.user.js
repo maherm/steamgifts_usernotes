@@ -550,7 +550,7 @@ function initExportButton($exportButtonDiv){
 	$exportButtonDiv.click(function(){
 		var allSavedDataStr = getExportDataStr();
 		var exportName = "SG_User_Notes_Export_"+moment().format("YYYY_MM_DD-HH_mm")+".json";
-		var file = new Blob([allSavedDataStr], {type: "text/plain"});
+		var file = new Blob([allSavedDataStr], {type: "application/json"});
 		
 		$a.attr("href", URL.createObjectURL(file));
 		$a.attr("download", exportName);
