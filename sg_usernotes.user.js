@@ -4,8 +4,8 @@
 // @version      0.5
 // @description  Save notes about other users on steamgifts.com
 // @author       MH
-// @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js
-// @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js
+// @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
+// @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js
 // @include      http*://www.steamgifts.com/user/*
 // @include      http*://www.steamgifts.com/account/*
@@ -14,12 +14,12 @@
 // @grant        GM_listValues
 // @grant        GM_deleteValue
 // @grant        GM_addStyle
-// @grant unsafeWindow
+// @grant        unsafeWindow
+
 
 // ==/UserScript==
 (function() {
     'use strict';
-
 //=====================Constants==============================
 
 var NoteTypes = {
@@ -52,23 +52,28 @@ DisplayText[NoteTypes.Whitelist] = "Added to whitelist";
 DisplayText[NoteTypes.WhitelistRemove] = "Removed from whitelist";
 
 
-
-var settings_url = "https://www.steamgifts.com/account/manage/whitelist#userNotes";
+var overridden_url = "https://www.steamgifts.com/account/manage/whitelist";
+var settings_url = overridden_url +"#userNotes";
 
 //====================Globals=================================
 
 var user_notes;
+var settings;
 
 //====================Main====================================
 
 function main(){
     if(isSelf())
         return;
+    settings = readSettings();
     if(isAccountPage()){
         injectCss();
         addUserNotesLink();
         if(isUserNotesSettingsPage()){
             switchToUserNotesSettings();
+        }
+        if(isOverriddenPage()){
+            initUserNotesLink();
         }
     }else{
         injectCss();
@@ -86,7 +91,7 @@ function loadNotes(){
 }
 
 function getAllSavedUserIds(){
-    return GM_listValues();
+    return GM_listValues().filter(function(el){return !isNaN(el);});
 }
 
 function loadAllNotes(){
@@ -137,6 +142,10 @@ function isUserNotesSettingsPage(){
     return document.URL === settings_url;
 }
 
+function isOverriddenPage(){
+    return document.URL === overridden_url;
+}
+
 function createNewNote(noteType){
    var date = new Date().getTime();
    saveData(noteType, date, DisplayText[noteType]);
@@ -160,16 +169,17 @@ function saveData(noteType, date, text){
     renderNotes();
 }
 
-//========================= Settings Page Functions ========================
-
-/* from http://stackoverflow.com/a/30832210 */
-function download(text, name, type) {
-    var a = document.createElement("a");
-    var file = new Blob([text], {type: type});
-    a.href = URL.createObjectURL(file);
-    a.download = name;
-    a.click();
+function readSettings(){
+    var defaultSettings = {
+        reverseNoteDirection: false
+    };
+    return GM_getValue("settings", defaultSettings);
 }
+
+function saveSettings(){
+    GM_setValue("settings", settings);
+}
+//========================= Settings Page Functions ========================
 
 /* from http://stackoverflow.com/a/26298948 */
 function readSingleFile(e, successCallback) {
@@ -209,16 +219,16 @@ function importJson(jsonStr, importMode){
             return;
         }
      }
-    
-    var allNotesCounter = 0;
+
+    var importedNotesCounter = 0;
     for(var i=0; i<userKeys.length; i++){
         var key = userKeys[i];
         var value = json[key];
-        allNotesCounter += value.length;
+        importedNotesCounter += value.length;
         GM_setValue(key, JSON.stringify(value));
     }
-    
-    alert("Succesfully imported "+allNotesCounter+" notes for "+userKeys.length+" different users");
+
+    alert("Succesfully imported "+importedNotesCounter+" notes for "+userKeys.length+" different users");
 }
 //====================UI Elements==============================
 
@@ -314,11 +324,11 @@ function createNewNotePanel(noteType, date){
 
 function showNotes(){
     renderNotes();
-    $(".sgun_notes_panel").show().siblings().hide();
+    $(".sgun_notes_panel").show().siblings().hide(0);
 }
 
 function hideNotes(){
-    $(".sgun_notes_panel").hide().siblings().show();
+    $(".sgun_notes_panel").hide().siblings().show(0);
 }
 
 function renderNotes(){
@@ -327,8 +337,15 @@ function renderNotes(){
     if(user_notes.length === 0){
          $panel.append($("<div>No notes for this user</div>"));
     }
-    
-    for(var i=0; i<user_notes.length; i++){
+    var i = 0;
+    var step = 1;
+    var condition= function(i){return i<user_notes.length;};
+    if(settings.reverseNoteDirection === true){
+        i=user_notes.length-1;
+        condition = function(i){return i>=0;};
+        step = -1;
+    }
+    for(i; condition(i); i+=step){
         var note = user_notes[i];
         var $note_html = $("<div>").addClass("sgun_note").addClass("sgun_note__"+note.type);
         $note_html.append($("<span>").addClass("sgun_note_type").append(IconFactory[note.type]()));
@@ -341,7 +358,10 @@ function renderNotes(){
 //=================================UI Elements Settings Page ========================
     
 function addUserNotesLink(){
-    $("h3.sidebar__heading:contains(Manage)").next().append('<li class="sidebar__navigation__item sgun__settings_link"><a class="sidebar__navigation__item__link" href="'+settings_url+'"><div class="sidebar__navigation__item__name">User Notes</div><div class="sidebar__navigation__item__underline"></div></a></li>');
+    var $link = $('<a class="sidebar__navigation__item__link sgun__settings_link" href="'+settings_url+'"><div class="sidebar__navigation__item__name">User Notes</div><div class="sidebar__navigation__item__underline"></div></a>');
+    var $li = $('<li class="sidebar__navigation__item sgun__settings_link">');
+    $li.append($link);
+    $("h3.sidebar__heading:contains(Manage)").next().append($li);
 }
 
 function switchToUserNotesSettings(){
@@ -355,17 +375,28 @@ function switchToUserNotesSettings(){
     $(".sgun__settings_link").addClass("is-selected").siblings().removeClass("is-selected");
     $(".sgun__settings_link .sidebar__navigation__item__link").prepend($("div.sidebar .fa.fa-caret-right"));
     
+    //Remove click handler so that settings wont be loaded again
+    $(".sgun__settings_link").off("click.sgun");
+    
     renderSettings();
 }
 
 
 function renderSettings(){
-    var $importExportRow = createFormRow("Import / Export User Notes", createImportExportDiv());
-    var $formRows = $("<div>").addClass("form__rows").append($importExportRow);
+    //Build sections
+	var $importExportRow = createFormRow("Import / Export User Notes", createImportExportDiv());
+    var $displaySettings = createFormRow("Display Settings", createDisplaySettingsDiv());
+    var $sgunInfo = createFormRow("Info", createInfoDiv());
+    
+	//Add sections to DOM
+	var $formRows = $("<div>").addClass("form__rows")
+    .append($importExportRow)
+    .append($displaySettings)
+    .append($sgunInfo);
     
     $("div.sidebar~div").append($formRows);
 }
-    
+
 var settingsCounter = 1;
 function createFormRow(title, $content){
     var $formHeadingNumber = $("<div>").addClass("form__heading__number").text(settingsCounter++);
@@ -378,14 +409,14 @@ function createFormRow(title, $content){
     
 function createImportExportDiv(){
     var $exportButtonDiv = createButton("export","Export User Notes", "fa-upload");
-    initExportButton($exportButtonDiv);
     var $importButtonDiv = createButton("import","Import User Notes", "fa-download");
     var $importButtonLabel = $("<label>").attr("for", "sgun__file_import").append($importButtonDiv);
     var $importFileUpload = $("<input>").attr("type","file").attr("name","sgun__file_import").attr("id", "sgun__file_import");
     var $resultDiv = $("<div>").addClass("sgun__form sgun__form_import_export").append($exportButtonDiv).append($importButtonLabel);
-    initImportButton($importFileUpload);
+
     $resultDiv.append($importFileUpload);
-    
+    initImportButton($importFileUpload);
+	initExportButton($exportButtonDiv);
     return $resultDiv;
 }
     
@@ -393,6 +424,35 @@ function createButton(name, title, fa_icon){
     var $icon = $("<i>").addClass("sgun__icon_"+name).addClass("fa "+fa_icon);
     var $buttonDiv = $("<div>").addClass("form__submit-button").addClass("sgun__button_"+name).text(title).prepend($icon);
     return $buttonDiv;
+}
+    
+function createDisplaySettingsDiv(){
+    var $div = $("<div>");
+    var $chkReverseDirection = $("<input type='checkbox'>").attr("name","sgun__reverse_notes").attr("id","sgun__reverse_notes").addClass("sgun__checkbox");
+    var $label = $("<label>").attr("for", "sgun__reverse_notes").text("Newest note at the top");
+    var $descripton = $("<div>").addClass("form__input-description").text("Reverses the direction of the notes shown on the user page, so that the newest note is at the top of the list and the oldest at the bottom.");
+    $chkReverseDirection.attr("checked", settings.reverseNoteDirection);
+    $div.append($chkReverseDirection).append($label).append($descripton);
+    initReverseDirectionCheckbox($chkReverseDirection);
+    return $div;
+}
+
+function createInfoDiv(){
+    var $div = $("<div>");
+    var scriptVersion = GM_info.script.version;
+    /*jshint multistr: true */
+    var textLines = [];
+    textLines.push("Steamgifts User Notes v"+scriptVersion);
+    textLines.push("created by <a href='https://www.steamgifts.com/user/mahermen'>mahermen</a>");
+    textLines.push("");
+    textLines.push("<a href='https://www.steamgifts.com/discussion/WO6jz/userscript-sg-user-notes'>Show discussion thread</a>");
+    textLines.push("<a href='https://github.com/maherm/steamgifts_usernotes'>Visit on GitHub</a>");
+
+    for(var i=0; i<textLines.length;i++){
+        $div.append($("<span class='sgun__infobox_line'>"+textLines[i]+"</span><br>"));
+    }
+    $div.addClass("sgun__info_box");
+    return $div;
 }
 //====================Init Controls ==============================
 
@@ -438,17 +498,32 @@ function initWhiteAndBlacklistButtons(){
 }
 
 //===================Init Settings Page UI========================
+function initUserNotesLink(){
+    $(".sgun__settings_link").on("click.sgun", switchToUserNotesSettings);
+}
 
 function initExportButton($exportButtonDiv){
-   $exportButtonDiv.click(function(){
-       var allSavedDataStr = loadAllNotesAsStr();
-       var exportName = "SG_User_Notes_Export_"+moment().format("YYYY_MM_DD-HH_mm")+".json";
-       download(allSavedDataStr, exportName, "text/plain");
-   });
+	var $a = $exportButtonDiv.wrap("<a>").parent();
+	$exportButtonDiv.click(function(){
+		var allSavedDataStr = loadAllNotesAsStr();
+		var exportName = "SG_User_Notes_Export_"+moment().format("YYYY_MM_DD-HH_mm")+".json";
+		var file = new Blob([allSavedDataStr], {type: "text/plain"});
+		
+		$a.attr("href", URL.createObjectURL(file));
+		$a.attr("download", exportName);
+		}
+	);
 }
 
 function initImportButton($fileInput){
    $fileInput.change(function(e){readSingleFile(e, function(str){importJson(str, ImportModes.ReplaceAll);});});
+}
+
+function initReverseDirectionCheckbox($checkbox){
+    $checkbox.change(function(){
+        settings.reverseNoteDirection = this.checked;
+        saveSettings();
+    });
 }
 
 //===================Constructor==================================
@@ -547,6 +622,19 @@ background-color: inherit; \
 	font-size: 0.55em; \
     font-family: sans-serif; \
     text-shadow: none; \
+} \
+ \
+input.sgun__checkbox { \
+	width: 11px; \
+    height: 11px; \
+    margin: 2px 6px 2px 2px; \
+    vertical-align: top; \
+} \
+.sgun__info_box{ \
+    font-family: monospace; \
+    border: 1px inset; \
+    overflow: auto; \
+    max-height: 150px; \
 }");
 }
 

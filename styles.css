@@ -95,3 +95,9 @@ input.sgun__checkbox {
     margin: 2px 6px 2px 2px;
     vertical-align: top;
 }
+.sgun__info_box{
+    font-family: monospace;
+    border: 1px inset;
+    overflow: auto;
+    max-height: 150px;
+}
