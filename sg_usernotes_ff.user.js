@@ -94,18 +94,20 @@ function getAllSavedUserIds(){
     return GM_listValues().filter(function(el){return !isNaN(el);});
 }
 
-function loadAllNotes(){
+function getExportData(){
    var userIds = getAllSavedUserIds();
    var vals = {};
    for (var i=0; i<userIds.length;i++) {
       var userId = userIds[i];
       vals[userId] = loadNotesForUser(userId);
    }
+   //Sync Meta Data
+   vals.sync = loadSync();
    return vals;
 }
 
-function loadAllNotesAsStr(){
-   return JSON.stringify(loadAllNotes(), undefined, 2);
+function getExportDataStr(){
+   return JSON.stringify(getExportData(), undefined, 2);
 }
 
 function initButtons(){
@@ -164,6 +166,7 @@ function saveData(noteType, date, text){
         current.push({type: noteType, date: date, text: text});
     }
     GM_setValue(userId, JSON.stringify(current));
+    incSyncRevision();
     loadNotes();
     updateNotesButton();
     renderNotes();
@@ -179,7 +182,42 @@ function readSettings(){
 function saveSettings(){
     GM_setValue("settings", settings);
 }
+
+function loadSync(){
+    var result = GM_getValue("sync", undefined);
+    if(result === undefined){
+        result = {};
+        result.uuid = uuid();
+        result.rev = 1;
+        saveSync(result);
+    }
+    return result;
+}
+
+function saveSync(sync){
+    GM_setValue("sync", sync);
+}
+
+function incSyncRevision(){
+    var sync = loadSync();
+    sync.rev += 1;
+    saveSync(sync);
+}
 //========================= Settings Page Functions ========================
+
+/* from http://stackoverflow.com/a/8809472/1842905 */
+function uuid(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now(); //use high-precision timer if available
+    }
+    var result = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return result;
+}
 
 /* from http://stackoverflow.com/a/26298948 */
 function readSingleFile(e, successCallback) {
@@ -219,6 +257,10 @@ function importJson(jsonStr, importMode){
             return;
         }
      }
+    var sync = json.sync;
+    if(sync !== undefined){
+        saveSync(sync);
+    }
 
     var importedNotesCounter = 0;
     for(var i=0; i<userKeys.length; i++){
@@ -505,7 +547,7 @@ function initUserNotesLink(){
 function initExportButton($exportButtonDiv){
 	var $a = $exportButtonDiv.wrap("<a>").parent();
 	$exportButtonDiv.click(function(){
-		var allSavedDataStr = loadAllNotesAsStr();
+		var allSavedDataStr = getExportDataStr();
 		var exportName = "SG_User_Notes_Export_"+moment().format("YYYY_MM_DD-HH_mm")+".json";
 		var file = new Blob([allSavedDataStr], {type: "text/plain"});
 		
