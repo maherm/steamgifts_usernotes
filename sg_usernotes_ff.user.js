@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         SG User Notes
 // @namespace    https://www.steamgifts.com
-// @version      0.5
+// @version      0.6
 // @description  Save notes about other users on steamgifts.com
 // @author       MH
 // @downloadURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
-// @updateURL	 https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes_ff.user.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js
 // @include      http*://www.steamgifts.com/user/*
@@ -63,6 +62,7 @@ var settings;
 //====================Main====================================
 
 function main(){
+    showNotifications();
     if(isSelf())
         return;
     settings = readSettings();
@@ -83,6 +83,14 @@ function main(){
         createPanel();
         initButtons();
     }
+}
+
+function showNotifications(){
+    if(isUsingTampermonkey() && GM_info.script.downloadURL.indexOf("_ff.user.js") >0 ){
+        var $content = $("<span>There is a bug in your version of SG User Notes which broke the update mechanism. Please re-install the userscript using <a href='https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js' style='text-weight:bold; text-decoration:underline;'>this link</a>. Your saved user notes will not be affected</span>");
+        queueNotification("Hotfix1_brokenUpdate", createNotification("danger", $content), {showAlways: true});
+    }
+    queueNotification("Release_0.6", createNotification("success", "<b>SG User Notes: New Version: 0.6</b> - No new features", {noQueue: true}));
 }
 
 function loadNotes(){
@@ -203,6 +211,11 @@ function incSyncRevision(){
     sync.rev += 1;
     saveSync(sync);
 }
+
+function isUsingTampermonkey(){
+   return GM_info.toString().indexOf("Tampermonkey") >=0;
+}
+
 //========================= Settings Page Functions ========================
 
 /* from http://stackoverflow.com/a/8809472/1842905 */
@@ -398,6 +411,60 @@ function renderNotes(){
     }
 }
 
+function createNotification(type, $content){
+ if(!($content instanceof jQuery))
+     $content = $("<span>"+$content+"</span>");
+ else
+     $content = $("<span>").append($content);
+  var $result = $("<div>").addClass("sgun__alert").addClass("alert alert-"+type).append($content);
+  return $result;
+}
+
+var notification_queue = [];
+
+function queueNotification(name, $html, opt){
+    var db_name = "notification_"+name;
+    var savedData = GM_getValue(db_name);
+    var options = $.extend({showAlways: false, closable: true, key: db_name, noQueue: false}, opt);
+    if(options.showAlways || savedData === undefined || savedData.dismissed === false){
+        if($(".sgun__alert").length === 0){
+            showNotification($html, options);
+        }else if(!options.noQueue){
+            notification_queue.push({$html: $html, options: options});
+        }
+    }
+}
+
+function showNextNotification(){
+    var queued = notification_queue.pop();
+    if(queued !== undefined){
+        showNotification(queued.$html, queued.options);
+    }
+}
+    
+function showNotification($html, options){
+    if(options.closable === true){
+        var $button = $("<i class='fa fa-remove sgun_button'></i>");
+        $html.append($button);
+        $button.click(function(){
+            $html.slideUp().queue(function(){$html.remove();});
+            markNotificationAsDismissed(options);
+            showNextNotification();
+        });
+    }
+
+    $html.hide();
+    $(".sidebar").next("div").prepend($html);
+    $html.slideDown();
+}
+
+function markNotificationAsDismissed(options){
+ if(!options.showAlways){
+     var val = GM_getValue(options.key, {});
+     val.dimissed = true;
+     GM_setValue(options.key,val);
+ }
+}
 //=================================UI Elements Settings Page ========================
     
 function addUserNotesLink(){
@@ -678,6 +745,48 @@ input.sgun__checkbox { \
     border: 1px inset; \
     overflow: auto; \
     max-height: 150px; \
+} \
+ \
+.alert { \
+    padding: 15px; \
+    margin-bottom: 20px; \
+    border: 1px solid; \
+    border-radius: 4px; \
+} \
+ \
+.alert-danger { \
+    color: #a94442; \
+    background-color: #f2dede; \
+    border-color: rgba(235,204,209,0.6); \
+} \
+ \
+.alert-warning { \
+    color: #8a6d3b; \
+    background-color: #fcf8e3; \
+    border-color: rgba(250,235,204,0.6); \
+} \
+ \
+.alert-info { \
+    color: #31708f; \
+    background-color: #d9edf7; \
+    border-color: rgba(188,232,241,0.6); \
+} \
+ \
+.alert-success { \
+    color: #3c763d; \
+    background-color: #dff0d8; \
+    border-color: rgba(214,233,198,0.6); \
+} \
+ \
+.sgun__alert .fa.sgun_button { \
+    color: lightgray; \
+	cursor: pointer; \
+	float: right; \
+} \
+ \
+.sgun__alert.alert-danger .fa.sgun_button { \
+	color: #C88484; \
+	 \
 }");
 }
 

@@ -101,3 +101,45 @@ input.sgun__checkbox {
     overflow: auto;
     max-height: 150px;
 }
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid;
+    border-radius: 4px;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: rgba(235,204,209,0.6);
+}
+
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: rgba(250,235,204,0.6);
+}
+
+.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: rgba(188,232,241,0.6);
+}
+
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: rgba(214,233,198,0.6);
+}
+
+.sgun__alert .fa.sgun_button {
+    color: lightgray;
+	cursor: pointer;
+	float: right;
+}
+
+.sgun__alert .fa.sgun_button.alert-danger {
+	color: #C88484;
+	
+}
