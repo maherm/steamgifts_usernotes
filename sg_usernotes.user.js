@@ -58,6 +58,7 @@ var settings_url = overridden_url +"#userNotes";
 
 var user_notes;
 var settings;
+var notification_queue = [];
 
 //====================Main====================================
 
@@ -419,8 +420,6 @@ function createNotification(type, $content){
   var $result = $("<div>").addClass("sgun__alert").addClass("alert alert-"+type).append($content);
   return $result;
 }
-
-var notification_queue = [];
 
 function queueNotification(name, $html, opt){
     var db_name = "notification_"+name;
