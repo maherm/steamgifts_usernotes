@@ -58,6 +58,7 @@ var settings_url = overridden_url +"#userNotes";
 
 var user_notes;
 var settings;
+var notification_queue = [];
 
 //====================Main====================================
 
@@ -90,7 +91,7 @@ function showNotifications(){
         var $content = $("<span>There is a bug in your version of SG User Notes which broke the update mechanism. Please re-install the userscript using <a href='https://raw.githubusercontent.com/maherm/steamgifts_usernotes/master/sg_usernotes.user.js' style='text-weight:bold; text-decoration:underline;'>this link</a>. Your saved user notes will not be affected</span>");
         queueNotification("Hotfix1_brokenUpdate", createNotification("danger", $content), {showAlways: true});
     }
-    queueNotification("Release_0.6", createNotification("success", "<b>SG User Notes: New Version: 0.6</b> - No new features", {noQueue: true}));
+    //queueNotification("Release_0.6", createNotification("success", "<b>SG User Notes: New Version: 0.6</b> - No new features", {noQueue: true}));
 }
 
 function loadNotes(){
@@ -419,8 +420,6 @@ function createNotification(type, $content){
   var $result = $("<div>").addClass("sgun__alert").addClass("alert alert-"+type).append($content);
   return $result;
 }
-
-var notification_queue = [];
 
 function queueNotification(name, $html, opt){
     var db_name = "notification_"+name;
